@@ -114,6 +114,14 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    protected void onDestroy() {
+        if(keyboardMonitor!=null){
+            keyboardMonitor.removeGlobalListener();
+        }
+        super.onDestroy();
+    }
+
 
     //法1、2实际是同一原理，通过重写事件分发dispatchTouchEvent()，动态的根据触摸的范围，按需隐藏
     @Override
