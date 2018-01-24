@@ -65,6 +65,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        //防止软件软键盘遮住点击按钮
         keyboardMonitor = new KeyboardMonitor(this);
         keyboardMonitor.setKeyBoardListener(new KeyboardMonitor.KeyBoardShowListener(){
             @Override
