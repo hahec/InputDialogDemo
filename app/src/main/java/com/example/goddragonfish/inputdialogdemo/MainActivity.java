@@ -1,6 +1,7 @@
 package com.example.goddragonfish.inputdialogdemo;
 
 import android.content.Context;
+import android.graphics.Rect;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
@@ -21,9 +22,11 @@ import java.util.logging.Logger;
 
 public class MainActivity extends AppCompatActivity {
 
+
     private RelativeLayout rlAcc;
     private RelativeLayout rlPsw;
-    InputMethodManager inputMethodManager;
+    private InputMethodManager inputMethodManager;
+    private KeyboardMonitor keyboardMonitor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,6 +38,7 @@ public class MainActivity extends AppCompatActivity {
         final ImageView iv2=findViewById(R.id.iv_del_psw_input);
         final EditText et1=findViewById(R.id.et_stu_account);
         final EditText et2=findViewById(R.id.et_stu_psw);
+        final Button btn=findViewById(R.id.btn);
 
         rlAcc=findViewById(R.id.rl_acc);
         rlPsw=findViewById(R.id.rl_psw);
@@ -53,6 +57,32 @@ public class MainActivity extends AppCompatActivity {
                 et2.setText("");
             }
         });
+
+        keyboardMonitor = new KeyboardMonitor(this);
+        keyboardMonitor.setKeyBoardListener(new KeyboardMonitor.KeyBoardShowListener(){
+            @Override
+            public void onKeyboardShow(boolean isShow,int screenHeight,int keyboardHeight) {
+                if (isShow) {
+                    Rect r=new Rect(0,0,0,0);
+                    btn.getHitRect(r);
+                    Log.e("h",Integer.toString(r.left)+" "+Integer.toString(r.top)+" "+Integer.toString(r.right)+" "+Integer.toString(r.bottom));
+                    Log.e("h",Integer.toString(screenHeight)+" "+Integer.toString(keyboardHeight));
+                    int btnBottom=px2dip(MainActivity.this,screenHeight-r.bottom);
+                    if(btnBottom<keyboardHeight){
+                        rlBind.scrollTo(0, keyboardHeight-btnBottom);
+                    }
+
+                    //px2dip(MainActivity.this,locs[1]);
+
+                } else {
+                    rlBind.scrollTo(0, 0);
+//                    RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) viewPager.getLayoutParams();
+//                    params.topMargin = DensityUtil.dip2px(mContext, 35);
+//                    viewPager.setLayoutParams(params);
+                }
+            }
+        });
+
 
 
         /*
@@ -132,7 +162,10 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
-
+    public  int px2dip(Context context, int pxValue) {
+        final float scale = context.getResources().getDisplayMetrics().density;
+        return (int) (pxValue / scale + 0.5f);
+    }
 
 
 }
