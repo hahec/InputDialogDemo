@@ -58,24 +58,34 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Toast.makeText(MainActivity.this,"click",Toast.LENGTH_SHORT).show();
+            }
+        });
+
         keyboardMonitor = new KeyboardMonitor(this);
         keyboardMonitor.setKeyBoardListener(new KeyboardMonitor.KeyBoardShowListener(){
             @Override
-            public void onKeyboardShow(boolean isShow,int screenHeight,int keyboardHeight) {
-                if (isShow) {
-                    Rect r=new Rect(0,0,0,0);
-                    btn.getHitRect(r);
-                    Log.e("h",Integer.toString(r.left)+" "+Integer.toString(r.top)+" "+Integer.toString(r.right)+" "+Integer.toString(r.bottom));
-                    Log.e("h",Integer.toString(screenHeight)+" "+Integer.toString(keyboardHeight));
-                    int btnBottom=px2dip(MainActivity.this,screenHeight-r.bottom);
-                    if(btnBottom<keyboardHeight){
-                        rlBind.scrollTo(0, keyboardHeight-btnBottom);
+            public void onKeyboardShow(boolean isShowing,int screenHeight,int keyboardHeight) {
+                if (isShowing) {
+                    //btn.getHitRect(rect);   //以decorView左上为原点
+                    //btn.getLocalVisibleRect(rect);   //以decorView左上为原点
+                    //btn.getGlobalVisibleRect(rect);   //以屏幕左上为原点
+//                    int height=getResources().getDisplayMetrics().heightPixels;
+//                    Log.e("h",Integer.toString(height));
+                    int[] locs=new int[2];
+                    //以屏幕左上为原点,getLocationInWindow效果一样，因为当前只有一个PhoneWindow，没有其他window（对话框）
+                    btn.getLocationOnScreen(locs);
+                    int btn2Bottom=screenHeight-locs[1]-btn.getHeight();//按钮底部到屏幕底部距离
+                    if(keyboardHeight>btn2Bottom){
+                        rlBind.scrollTo(0, keyboardHeight-btn2Bottom+dp2px(MainActivity.this,5));
                     }
-
-                    //px2dip(MainActivity.this,locs[1]);
 
                 } else {
                     rlBind.scrollTo(0, 0);
+                    Log.e("h","lalala");
 //                    RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) viewPager.getLayoutParams();
 //                    params.topMargin = DensityUtil.dip2px(mContext, 35);
 //                    viewPager.setLayoutParams(params);
@@ -162,9 +172,13 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
-    public  int px2dip(Context context, int pxValue) {
-        final float scale = context.getResources().getDisplayMetrics().density;
-        return (int) (pxValue / scale + 0.5f);
+    public int px2dp(Context context, int px) {
+        float density = context.getResources().getDisplayMetrics().density;
+        return (int) (px / density + 0.5f);
+    }
+    public int dp2px(Context context,int dp){
+        float density =context.getResources().getDisplayMetrics().density;
+        return (int)(dp*density+0.5);
     }
 
 
