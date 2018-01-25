@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -38,11 +39,16 @@ public class MainActivity extends AppCompatActivity {
         final ImageView iv2=findViewById(R.id.iv_del_psw_input);
         final EditText et1=findViewById(R.id.et_stu_account);
         final EditText et2=findViewById(R.id.et_stu_psw);
+        final CheckBox cb=findViewById(R.id.cb_psw_visibility);
         final Button btn=findViewById(R.id.btn);
 
         rlAcc=findViewById(R.id.rl_acc);
         rlPsw=findViewById(R.id.rl_psw);
         inputMethodManager=(InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+
+        et1.addTextChangedListener(EditTextListenerUtil.EdTextListener(et1,iv1));
+
+        et2.addTextChangedListener(EditTextListenerUtil.EdTextListener(et2,iv2,cb));
 
         iv1.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -54,7 +60,14 @@ public class MainActivity extends AppCompatActivity {
         iv2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                et2.setText("");
+                EditTextListenerUtil.onDelete(et2,cb);
+            }
+        });
+
+        cb.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                EditTextListenerUtil.isEnableVisible(cb,et2);
             }
         });
 
@@ -69,19 +82,20 @@ public class MainActivity extends AppCompatActivity {
         keyboardMonitor = new KeyboardMonitor(this);
         keyboardMonitor.setKeyBoardListener(new KeyboardMonitor.KeyBoardShowListener(){
             @Override
-            public void onKeyboardShow(boolean isShowing,int screenHeight,int keyboardHeight) {
+            public void onKeyboardShow(boolean isShowing,int screenHeight,int inVisableHeight) {
                 if (isShowing) {
                     //btn.getHitRect(rect);   //以decorView左上为原点
                     //btn.getLocalVisibleRect(rect);   //以decorView左上为原点
                     //btn.getGlobalVisibleRect(rect);   //以屏幕左上为原点
 //                    int height=getResources().getDisplayMetrics().heightPixels;
-//                    Log.e("h",Integer.toString(height));
+//                    Log.e("h","=========="+Integer.toString(height)
+//                            +Integer.toString(screenHeight));
                     int[] locs=new int[2];
                     //以屏幕左上为原点,getLocationInWindow效果一样，因为当前只有一个PhoneWindow，没有其他window（对话框）
                     btn.getLocationOnScreen(locs);
                     int btn2Bottom=screenHeight-locs[1]-btn.getHeight();//按钮底部到屏幕底部距离
-                    if(keyboardHeight>btn2Bottom){
-                        rlBind.scrollTo(0, keyboardHeight-btn2Bottom+dp2px(MainActivity.this,5));
+                    if(inVisableHeight>btn2Bottom){
+                        rlBind.scrollTo(0, inVisableHeight-btn2Bottom+dp2px(MainActivity.this,5));
                     }
 
                 } else {

@@ -21,7 +21,8 @@ public class KeyboardMonitor implements ViewTreeObserver.OnGlobalLayoutListener{
     private View mContentView;
     private KeyBoardShowListener keyBoardShowListener;
     private int screenHeight;
-    private int excVisableHeight; //前一状态的可见区域高度
+    private int excVisableHeight; //前一状态的不可见区域高度
+    private int huaWeiBottomBarHeight=-1; //华为底部的Bar高度
 
     public KeyboardMonitor(Activity activity) {
         mContentView=activity.findViewById(android.R.id.content);//获取contentView
@@ -34,20 +35,24 @@ public class KeyboardMonitor implements ViewTreeObserver.OnGlobalLayoutListener{
     public void onGlobalLayout() {
         try {
             Rect rect = new Rect();
-            //以手机屏幕左上角为原点（包括状态栏），获取除了状态栏的可见矩形
+            //以手机屏幕左上角为原点（包括状态栏），获取除了状态栏的可见矩形，华为的rect.bottom不包括底部bar
             mContentView.getWindowVisibleDisplayFrame(rect);
-            screenHeight=mContentView.getRootView().getHeight();//decorView的高度
-            int keyboardHeight = mContentView.getRootView().getHeight() - rect.bottom;
+            //PhoneWindow的高度,这构造函数里获取会为0,因为在onCreate()里获取压根还没绘制View,onResume()之后才绘制
+            screenHeight=mContentView.getRootView().getHeight();
+            //华为的heightPixels=screenHeight-huaweibottomBarHeight;  rect.bottom不包括底部bar
+            if(huaWeiBottomBarHeight<0){
+                huaWeiBottomBarHeight=screenHeight-rect.bottom;
+            }
+            int inVisableHeight = screenHeight - rect.bottom;
             //防止不必要的keyBoardShowListener监听（比如关屏幕后开启屏幕）
-            if(excVisableHeight==keyboardHeight)return;
-            excVisableHeight=keyboardHeight;
-
-            if (keyboardHeight > 0) {
+            if(excVisableHeight==inVisableHeight)return;
+            excVisableHeight=inVisableHeight;
+            if (inVisableHeight > huaWeiBottomBarHeight) {
                 //软键盘显示中
-                keyBoardShowListener.onKeyboardShow(true,screenHeight,keyboardHeight);
+                keyBoardShowListener.onKeyboardShow(true,screenHeight,inVisableHeight);
             } else {
                 ////软键盘没有显示
-                keyBoardShowListener.onKeyboardShow(false,screenHeight,keyboardHeight);
+                keyBoardShowListener.onKeyboardShow(false,screenHeight,inVisableHeight);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -88,6 +93,6 @@ public class KeyboardMonitor implements ViewTreeObserver.OnGlobalLayoutListener{
     }
 
     public interface KeyBoardShowListener{
-        void onKeyboardShow(boolean isShowing,int screenHeight,int keyboardHeight);
+        void onKeyboardShow(boolean isShowing,int screenHeight,int inVisableHeight);
     }
 }
